@@ -1,65 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>Car Info Chatbot</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    select, button { padding: 10px; margin: 10px; font-size: 16px; }
-    #carInfo { margin-top: 20px; }
-  </style>
 </head>
 <body>
-  <h1>Global Car Info Chatbot</h1>
-  <input type="text" id="make" placeholder="Enter Car Make (e.g. Toyota)">
-  <input type="text" id="model" placeholder="Enter Model (e.g. Corolla)">
-  <input type="number" id="year" placeholder="Enter Year (e.g. 2020)">
-  <br>
-  <button onclick="getCarInfo()">Get Car Info</button>
 
-  <div id="carInfo"></div>
+  <h1>Car Information Chatbot</h1>
 
+  <!-- 🔽 This is the correct place -->
+  <select id="car-select">
+    <option value="">-- Select a car --</option>
+    <option value="toyota corolla">Toyota Corolla</option>
+    <option value="honda civic">Honda Civic</option>
+  </select>
+
+  <div id="car-info"></div>
+  <!-- 🔼 This displays the result -->
+
+  <!-- 🔽 Paste your JavaScript at the end -->
   <script>
-    async function getCarInfo() {
-      const make = document.getElementById('make').value;
-      const model = document.getElementById('model').value;
-      const year = document.getElementById('year').value;
+    const apiKey = "67LhGePjBPwo10xXTLLZSA==Dd0xkX6e2SpGAULl"; // Replace with your actual key
 
-      if (!make || !model || !year) {
-        alert("Please enter all details.");
-        return;
-      }
+    document.getElementById("car-select").addEventListener("change", function () {
+      const selectedValue = this.value;
+      const [make, model] = selectedValue.split(" ");
 
-      const apiKey = "67LhGePjBPwo10xXTLLZSA==Dd0xkX6e2SpGAULl"; // <-- Replace this with your API key
-      const url = `https://api.api-ninjas.com/v1/cars?make=${make}&model=${model}&year=${year}`;
+      const apiUrl = `https://api.api-ninjas.com/v1/cars?make=${make}&model=${model}`;
 
-      try {
-        const response = await fetch(url, {
-          headers: { 'X-Api-Key': apiKey }
-        });
+      fetch(apiUrl, {
+        method: "GET",
+        headers: { "X-Api-Key": apiKey },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const infoDiv = document.getElementById("car-info");
+          if (data.length === 0) {
+            infoDiv.innerHTML = "No data found for this car.";
+            return;
+          }
 
-        const data = await response.json();
-
-        if (data.length === 0) {
-          document.getElementById('carInfo').innerHTML = "No car found with that info.";
-        } else {
           const car = data[0];
-          document.getElementById('carInfo').innerHTML = `
+          infoDiv.innerHTML = `
             <h3>${car.make} ${car.model} (${car.year})</h3>
-            <p><b>Type:</b> ${car.class}</p>
-            <p><b>Engine:</b> ${car.engine}</p>
-            <p><b>Fuel Type:</b> ${car.fuel_type}</p>
-            <p><b>Transmission:</b> ${car.transmission}</p>
-            <p><b>Drive:</b> ${car.drive}</p>
-            <p><b>City MPG:</b> ${car.city_mpg}</p>
-            <p><b>Highway MPG:</b> ${car.highway_mpg}</p>
+            <p><strong>Engine:</strong> ${car.engine_type}</p>
+            <p><strong>Transmission:</strong> ${car.transmission}</p>
+            <p><strong>Driven Wheels:</strong> ${car.driven_wheels}</p>
+            <p><strong>Fuel Type:</strong> ${car.fuel_type}</p>
+            <p><strong>City MPG:</strong> ${car.city_mpg}</p>
+            <p><strong>Highway MPG:</strong> ${car.highway_mpg}</p>
           `;
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Error fetching car data.");
-      }
-    }
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById("car-info").innerHTML = "Error fetching data.";
+        });
+    });
   </script>
+
 </body>
 </html>
