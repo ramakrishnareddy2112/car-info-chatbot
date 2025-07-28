@@ -1,29 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Car Info Chatbot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Information Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #car-search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #car-info {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    p {
+      margin: 8px 0;
+    }
+  </style>
 </head>
 <body>
 
   <h1>Car Information Chatbot</h1>
 
-  <!-- 🔽 This is the correct place -->
-  <select id="car-select">
-    <option value="">-- Select a car --</option>
-    <option value="toyota corolla">Toyota Corolla</option>
-    <option value="honda civic">Honda Civic</option>
-  </select>
+  <div id="car-search">
+    <input type="text" id="car-input" placeholder="Enter car (e.g., Toyota Corolla)" />
+    <button onclick="getCarInfo()">Search</button>
+  </div>
 
   <div id="car-info"></div>
-  <!-- 🔼 This displays the result -->
 
-  <!-- 🔽 Paste your JavaScript at the end -->
   <script>
-    const apiKey = "67LhGePjBPwo10xXTLLZSA==Dd0xkX6e2SpGAULl"; // Replace with your actual key
+    const apiKey = "67LhGePjBPwo10xXTLLZSA==Dd0xkX6e2SpGAULl"; // Your real API key
 
-    document.getElementById("car-select").addEventListener("change", function () {
-      const selectedValue = this.value;
-      const [make, model] = selectedValue.split(" ");
+    function getCarInfo() {
+      const inputValue = document.getElementById("car-input").value.trim().toLowerCase();
+      const infoDiv = document.getElementById("car-info");
+      infoDiv.innerHTML = ""; // clear old results
+
+      if (!inputValue) {
+        infoDiv.innerHTML = "<p>Please enter a car make and model.</p>";
+        return;
+      }
+
+      const [make, ...modelParts] = inputValue.split(" ");
+      const model = modelParts.join(" ");
 
       const apiUrl = `https://api.api-ninjas.com/v1/cars?make=${make}&model=${model}`;
 
@@ -33,9 +85,8 @@
       })
         .then((res) => res.json())
         .then((data) => {
-          const infoDiv = document.getElementById("car-info");
           if (data.length === 0) {
-            infoDiv.innerHTML = "No data found for this car.";
+            infoDiv.innerHTML = "<p>No data found for this car. Try another.</p>";
             return;
           }
 
@@ -50,11 +101,11 @@
             <p><strong>Highway MPG:</strong> ${car.highway_mpg}</p>
           `;
         })
-        .catch((error) => {
-          console.error(error);
-          document.getElementById("car-info").innerHTML = "Error fetching data.";
+        .catch((err) => {
+          console.error(err);
+          infoDiv.innerHTML = "<p>Error fetching data. Please try again.</p>";
         });
-    });
+    }
   </script>
 
 </body>
