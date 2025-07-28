@@ -2,109 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Car Info Chatbot</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-    h1 {
-      color: #222;
-    }
-    select, button {
-      margin: 10px 0;
-      padding: 8px;
-      width: 200px;
-    }
+    body { font-family: Arial; text-align: center; padding: 40px; }
+    select, button { padding: 10px; margin: 10px; font-size: 16px; }
+    #carInfo { margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>Car Info Chatbot</h1>
+  <h1>Global Car Info Chatbot</h1>
+  <input type="text" id="make" placeholder="Enter Car Make (e.g. Toyota)">
+  <input type="text" id="model" placeholder="Enter Model (e.g. Corolla)">
+  <input type="number" id="year" placeholder="Enter Year (e.g. 2020)">
+  <br>
+  <button onclick="getCarInfo()">Get Car Info</button>
 
-  <label for="car-make">Choose Car Make:</label><br />
-  <select id="car-make">
-    <option value="">Choose Make</option>
-  </select><br />
-
-  <label for="car-model">Choose Model:</label><br />
-  <select id="car-model">
-    <option value="">Choose Model</option>
-  </select><br />
-
-  <label for="car-year">Choose Year:</label><br />
-  <select id="car-year">
-    <option value="">Choose Year</option>
-  </select><br />
-
-  <button id="get-info">Get Car Info</button>
+  <div id="carInfo"></div>
 
   <script>
-    const carData = {
-      Toyota: {
-        Corolla: [2020, 2021, 2022],
-        Camry: [2019, 2020, 2023]
-      },
-      Honda: {
-        Civic: [2018, 2019, 2020],
-        Accord: [2021, 2022, 2023]
+    async function getCarInfo() {
+      const make = document.getElementById('make').value;
+      const model = document.getElementById('model').value;
+      const year = document.getElementById('year').value;
+
+      if (!make || !model || !year) {
+        alert("Please enter all details.");
+        return;
       }
-    };
 
-    const makeSelect = document.getElementById("car-make");
-    const modelSelect = document.getElementById("car-model");
-    const yearSelect = document.getElementById("car-year");
+      const apiKey = "67LhGePjBPwo10xXTLLZSA==Dd0xkX6e2SpGAULl"; // <-- Replace this with your API key
+      const url = `https://api.api-ninjas.com/v1/cars?make=${make}&model=${model}&year=${year}`;
 
-    // Populate Car Makes
-    for (let make in carData) {
-      const option = document.createElement("option");
-      option.value = make;
-      option.text = make;
-      makeSelect.add(option);
+      try {
+        const response = await fetch(url, {
+          headers: { 'X-Api-Key': apiKey }
+        });
+
+        const data = await response.json();
+
+        if (data.length === 0) {
+          document.getElementById('carInfo').innerHTML = "No car found with that info.";
+        } else {
+          const car = data[0];
+          document.getElementById('carInfo').innerHTML = `
+            <h3>${car.make} ${car.model} (${car.year})</h3>
+            <p><b>Type:</b> ${car.class}</p>
+            <p><b>Engine:</b> ${car.engine}</p>
+            <p><b>Fuel Type:</b> ${car.fuel_type}</p>
+            <p><b>Transmission:</b> ${car.transmission}</p>
+            <p><b>Drive:</b> ${car.drive}</p>
+            <p><b>City MPG:</b> ${car.city_mpg}</p>
+            <p><b>Highway MPG:</b> ${car.highway_mpg}</p>
+          `;
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error fetching car data.");
+      }
     }
-
-    // When a make is selected
-    makeSelect.addEventListener("change", function () {
-      modelSelect.innerHTML = "<option value=''>Choose Model</option>";
-      yearSelect.innerHTML = "<option value=''>Choose Year</option>";
-
-      const models = carData[this.value];
-      for (let model in models) {
-        const option = document.createElement("option");
-        option.value = model;
-        option.text = model;
-        modelSelect.add(option);
-      }
-    });
-
-    // When a model is selected
-    modelSelect.addEventListener("change", function () {
-      yearSelect.innerHTML = "<option value=''>Choose Year</option>";
-
-      const selectedMake = makeSelect.value;
-      const selectedModel = this.value;
-      const years = carData[selectedMake][selectedModel];
-
-      for (let year of years) {
-        const option = document.createElement("option");
-        option.value = year;
-        option.text = year;
-        yearSelect.add(option);
-      }
-    });
-
-    // Show final info
-    document.getElementById("get-info").addEventListener("click", function () {
-      const make = makeSelect.value;
-      const model = modelSelect.value;
-      const year = yearSelect.value;
-
-      if (make && model && year) {
-        alert(`🚗 Car Info:\n\nMake: ${make}\nModel: ${model}\nYear: ${year}`);
-      } else {
-        alert("⚠️ Please select all fields.");
-      }
-    });
   </script>
 </body>
 </html>
