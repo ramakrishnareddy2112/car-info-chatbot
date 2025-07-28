@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Car Info Chatbot</title>
+</head>
+<body>
+  <h1>Car Info Chatbot</h1>
+
+  <label>Choose Car Make:</label><br>
+  <select id="make"></select><br><br>
+
+  <label>Choose Model:</label><br>
+  <select id="model"></select><br><br>
+
+  <label>Choose Year:</label><br>
+  <select id="year"></select><br><br>
+
+  <button onclick="getCarInfo()">Get Car Info</button>
+
+  <div id="result"></div>
+
+  <script>
+    // Load car makes
+    fetch("https://www.carqueryapi.com/api/0.3/?cmd=getMakes")
+    .then(res => res.json())
+    .then(data => {
+      let makes = data.Makes;
+      makes.forEach(m => {
+        let opt = document.createElement("option");
+        opt.value = m.make_slug;
+        opt.text = m.make_display;
+        document.getElementById("make").appendChild(opt);
+      });
+    });
+
+    // Load models when make is selected
+    document.getElementById("make").addEventListener("change", () => {
+      let make = document.getElementById("make").value;
+      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getModels&make=${make}`)
+      .then(res => res.json())
+      .then(data => {
+        let models = data.Models;
+        let modelSelect = document.getElementById("model");
+        modelSelect.innerHTML = "";
+        models.forEach(m => {
+          let opt = document.createElement("option");
+          opt.value = m.model_name;
+          opt.text = m.model_name;
+          modelSelect.appendChild(opt);
+        });
+      });
+    });
+
+    // Load years
+    let yearSelect = document.getElementById("year");
+    for (let y = 2025; y >= 1886; y--) {
+      let opt = document.createElement("option");
+      opt.value = y;
+      opt.text = y;
+      yearSelect.appendChild(opt);
+    }
+
+    // Fetch car info
+    function getCarInfo() {
+      let make = document.getElementById("make").value;
+      let model = document.getElementById("model").value;
+      let year = document.getElementById("year").value;
+      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getTrims&make=${make}&model=${model}&year=${year}`)
+      .then(res => res.json())
+      .then(data => {
+        let trims = data.Trims;
+        if (trims.length === 0) {
+          document.getElementById("result").innerText = "❌ No car info found.";
+        } else {
+          let car = trims[0];
+          document.getElementById("result").innerHTML = `
+            <h3>${car.make_display} ${car.model_name} (${car.model_year})</h3>
+            <p><b>Engine:</b> ${car.model_engine_cc} cc / ${car.model_engine_power_ps} PS</p>
+            <p><b>Body Style:</b> ${car.model_body}</p>
+            <p><b>Fuel:</b> ${car.model_engine_fuel}</p>
+            <p><b>Transmission:</b> ${car.model_transmission_type}</p>
+          `;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
