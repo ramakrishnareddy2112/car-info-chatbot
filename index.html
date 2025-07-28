@@ -1,88 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Car Info Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    h1 {
+      color: #222;
+    }
+    select, button {
+      margin: 10px 0;
+      padding: 8px;
+      width: 200px;
+    }
+  </style>
 </head>
 <body>
   <h1>Car Info Chatbot</h1>
 
-  <label>Choose Car Make:</label><br>
-  <select id="make"></select><br><br>
+  <label for="car-make">Choose Car Make:</label><br />
+  <select id="car-make">
+    <option value="">Choose Make</option>
+  </select><br />
 
-  <label>Choose Model:</label><br>
-  <select id="model"></select><br><br>
+  <label for="car-model">Choose Model:</label><br />
+  <select id="car-model">
+    <option value="">Choose Model</option>
+  </select><br />
 
-  <label>Choose Year:</label><br>
-  <select id="year"></select><br><br>
+  <label for="car-year">Choose Year:</label><br />
+  <select id="car-year">
+    <option value="">Choose Year</option>
+  </select><br />
 
-  <button onclick="getCarInfo()">Get Car Info</button>
-
-  <div id="result"></div>
+  <button id="get-info">Get Car Info</button>
 
   <script>
-    // Load car makes
-    fetch("https://www.carqueryapi.com/api/0.3/?cmd=getMakes")
-    .then(res => res.json())
-    .then(data => {
-      let makes = data.Makes;
-      makes.forEach(m => {
-        let opt = document.createElement("option");
-        opt.value = m.make_slug;
-        opt.text = m.make_display;
-        document.getElementById("make").appendChild(opt);
-      });
-    });
+    const carData = {
+      Toyota: {
+        Corolla: [2020, 2021, 2022],
+        Camry: [2019, 2020, 2023]
+      },
+      Honda: {
+        Civic: [2018, 2019, 2020],
+        Accord: [2021, 2022, 2023]
+      }
+    };
 
-    // Load models when make is selected
-    document.getElementById("make").addEventListener("change", () => {
-      let make = document.getElementById("make").value;
-      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getModels&make=${make}`)
-      .then(res => res.json())
-      .then(data => {
-        let models = data.Models;
-        let modelSelect = document.getElementById("model");
-        modelSelect.innerHTML = "";
-        models.forEach(m => {
-          let opt = document.createElement("option");
-          opt.value = m.model_name;
-          opt.text = m.model_name;
-          modelSelect.appendChild(opt);
-        });
-      });
-    });
+    const makeSelect = document.getElementById("car-make");
+    const modelSelect = document.getElementById("car-model");
+    const yearSelect = document.getElementById("car-year");
 
-    // Load years
-    let yearSelect = document.getElementById("year");
-    for (let y = 2025; y >= 1886; y--) {
-      let opt = document.createElement("option");
-      opt.value = y;
-      opt.text = y;
-      yearSelect.appendChild(opt);
+    // Populate Car Makes
+    for (let make in carData) {
+      const option = document.createElement("option");
+      option.value = make;
+      option.text = make;
+      makeSelect.add(option);
     }
 
-    // Fetch car info
-    function getCarInfo() {
-      let make = document.getElementById("make").value;
-      let model = document.getElementById("model").value;
-      let year = document.getElementById("year").value;
-      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getTrims&make=${make}&model=${model}&year=${year}`)
-      .then(res => res.json())
-      .then(data => {
-        let trims = data.Trims;
-        if (trims.length === 0) {
-          document.getElementById("result").innerText = "❌ No car info found.";
-        } else {
-          let car = trims[0];
-          document.getElementById("result").innerHTML = `
-            <h3>${car.make_display} ${car.model_name} (${car.model_year})</h3>
-            <p><b>Engine:</b> ${car.model_engine_cc} cc / ${car.model_engine_power_ps} PS</p>
-            <p><b>Body Style:</b> ${car.model_body}</p>
-            <p><b>Fuel:</b> ${car.model_engine_fuel}</p>
-            <p><b>Transmission:</b> ${car.model_transmission_type}</p>
-          `;
-        }
-      });
-    }
+    // When a make is selected
+    makeSelect.addEventListener("change", function () {
+      modelSelect.innerHTML = "<option value=''>Choose Model</option>";
+      yearSelect.innerHTML = "<option value=''>Choose Year</option>";
+
+      const models = carData[this.value];
+      for (let model in models) {
+        const option = document.createElement("option");
+        option.value = model;
+        option.text = model;
+        modelSelect.add(option);
+      }
+    });
+
+    // When a model is selected
+    modelSelect.addEventListener("change", function () {
+      yearSelect.innerHTML = "<option value=''>Choose Year</option>";
+
+      const selectedMake = makeSelect.value;
+      const selectedModel = this.value;
+      const years = carData[selectedMake][selectedModel];
+
+      for (let year of years) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.text = year;
+        yearSelect.add(option);
+      }
+    });
+
+    // Show final info
+    document.getElementById("get-info").addEventListener("click", function () {
+      const make = makeSelect.value;
+      const model = modelSelect.value;
+      const year = yearSelect.value;
+
+      if (make && model && year) {
+        alert(`🚗 Car Info:\n\nMake: ${make}\nModel: ${model}\nYear: ${year}`);
+      } else {
+        alert("⚠️ Please select all fields.");
+      }
+    });
   </script>
 </body>
 </html>
